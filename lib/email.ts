@@ -20,7 +20,10 @@ export async function sendNewRegistrationEmail(params: {
 
   try {
     const resend = new Resend(apiKey);
-    await resend.emails.send({
+    // Resend SDK trả về { data, error } thay vì throw khi API báo lỗi
+    // (ví dụ domain chưa verify, vượt giới hạn sandbox) — PHẢI check `error`
+    // thủ công, nếu không sẽ không bao giờ biết email gửi thất bại.
+    const { data, error } = await resend.emails.send({
       from,
       to: notifyTo,
       subject: `Đăng ký mới: ${params.name} (${params.phone})`,
@@ -34,8 +37,14 @@ export async function sendNewRegistrationEmail(params: {
         </ul>
       `,
     });
+
+    if (error) {
+      console.error("[email] Resend báo lỗi khi gửi thông báo đăng ký", error);
+    } else {
+      console.log("[email] Đã gửi thông báo đăng ký, id:", data?.id);
+    }
   } catch (err) {
-    console.error("[email] Gửi thông báo đăng ký thất bại", err);
+    console.error("[email] Gửi thông báo đăng ký thất bại (exception)", err);
   }
 }
 
