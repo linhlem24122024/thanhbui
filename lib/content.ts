@@ -28,6 +28,7 @@ export const packages = [
     name: "Khóa 1",
     description: "6 buổi Zoom trực tiếp + chấm bài từng người, từng tuần.",
     price: "1.290.000đ",
+    priceValue: 1290000,
     oldPrice: "1.790.000đ",
     priceNote: "Giá chịu rủi ro khóa đầu — từ khóa 2 trở đi là 1.790.000đ",
     seats: "25 suất",

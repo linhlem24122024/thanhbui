@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentMember } from "@/lib/session";
-import { packages, site } from "@/lib/content";
+import { packages } from "@/lib/content";
 import DashboardNav from "@/app/dashboard/DashboardNav";
+import DepositFlow from "./DepositFlow";
 
 export default async function UpgradePage() {
   const member = await getCurrentMember();
@@ -38,24 +39,7 @@ export default async function UpgradePage() {
               ))}
             </ul>
 
-            {!isPaid && (
-              <div className="rounded-xl bg-bg-light p-5">
-                <p className="mb-3 text-sm font-semibold text-navy-mid">Bước tiếp theo:</p>
-                <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm text-gray-700">
-                  <li>Chuyển khoản học phí theo thông tin admin gửi qua Zalo.</li>
-                  <li>Nhắn Zalo kèm ảnh chụp biên lai để được xác nhận.</li>
-                  <li>Admin xác nhận thủ công — tài khoản của bạn sẽ được nâng lên &quot;Thành viên chính thức&quot;.</li>
-                </ol>
-                <a
-                  href={site.zaloLink}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-block rounded-lg bg-accent-red px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-                >
-                  💬 Liên hệ Zalo xác nhận: {site.zaloNumber}
-                </a>
-              </div>
-            )}
+            {!isPaid && <DepositFlow packageId={pkg.id} packageName={pkg.name} />}
           </div>
         ))}
 

@@ -1,17 +1,42 @@
 import { redirect } from "next/navigation";
 import { isAdminSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
-import { site } from "@/lib/content";
+import { site, packages } from "@/lib/content";
 import AdminLogoutButton from "./AdminLogoutButton";
 import UpgradeForm from "./UpgradeForm";
+import DepositConfirmButton from "./DepositConfirmButton";
 
 const TIER_LABEL: Record<string, string> = { free: "Free", paid: "Thành viên chính thức" };
+const DEPOSIT_STATUS_LABEL: Record<string, string> = {
+  pending: "Chưa báo cọc",
+  reported: "Đã báo cọc",
+  confirmed: "Đã cọc (xác nhận)",
+};
+
+function formatVnd(n: number) {
+  return n.toLocaleString("vi-VN") + "đ";
+}
+
+type DepositRow = {
+  id: string;
+  package_id: string;
+  deposit_amount: number;
+  remaining_amount: number;
+  payment_code: string;
+  status: string;
+  created_at: string;
+  members: { name: string; phone: string } | { name: string; phone: string }[] | null;
+};
+
+function depositMember(row: DepositRow) {
+  return Array.isArray(row.members) ? row.members[0] : row.members;
+}
 
 export default async function AdminPage() {
   if (!(await isAdminSession())) redirect("/admin/login");
 
   const db = supabaseAdmin();
-  const [{ data: registrations }, { data: members }] = await Promise.all([
+  const [{ data: registrations }, { data: members }, { data: deposits }] = await Promise.all([
     db
       .from("registrations")
       .select("id, name, phone, email, package_id, status, created_at")
@@ -20,6 +45,12 @@ export default async function AdminPage() {
       .from("members")
       .select("id, name, phone, email, tier, must_change_password, created_at")
       .order("created_at", { ascending: false }),
+    db
+      .from("upgrade_deposits")
+      .select(
+        "id, package_id, deposit_amount, remaining_amount, payment_code, status, created_at, members(name, phone)"
+      )
+      .order("created_at", { ascending: false }) as unknown as Promise<{ data: DepositRow[] | null }>,
   ]);
 
   return (
@@ -127,6 +158,66 @@ export default async function AdminPage() {
           </div>
 
           <UpgradeForm />
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="mb-4 text-lg font-extrabold text-navy-mid">Cọc nâng cấp ({deposits?.length ?? 0})</h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-xs uppercase text-text-muted">
+                  <th className="py-2 pr-4">Học viên</th>
+                  <th className="py-2 pr-4">Nâng cấp gói</th>
+                  <th className="py-2 pr-4">Đã cọc</th>
+                  <th className="py-2 pr-4">Còn lại</th>
+                  <th className="py-2 pr-4">Mã tham chiếu</th>
+                  <th className="py-2 pr-4">Trạng thái</th>
+                  <th className="py-2 pr-4"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {(deposits ?? []).map((d) => {
+                  const m = depositMember(d);
+                  const pkg = packages.find((p) => p.id === d.package_id);
+                  return (
+                    <tr key={d.id} className="border-b border-gray-100">
+                      <td className="py-2 pr-4">
+                        {m?.name ?? "—"} <span className="text-text-muted">({m?.phone ?? "—"})</span>
+                      </td>
+                      <td className="py-2 pr-4">{pkg?.name ?? d.package_id}</td>
+                      <td className="py-2 pr-4">{formatVnd(d.deposit_amount)}</td>
+                      <td className="py-2 pr-4">{formatVnd(d.remaining_amount)}</td>
+                      <td className="py-2 pr-4 font-mono text-xs">{d.payment_code}</td>
+                      <td className="py-2 pr-4">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                            d.status === "confirmed"
+                              ? "bg-accent-gold/20 text-navy-mid"
+                              : d.status === "reported"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          {DEPOSIT_STATUS_LABEL[d.status] ?? d.status}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-4">
+                        {d.status !== "confirmed" && <DepositConfirmButton depositId={d.id} />}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {(!deposits || deposits.length === 0) && (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-text-muted">
+                      Chưa có yêu cầu cọc nào.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
       </main>
     </div>

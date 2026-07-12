@@ -121,6 +121,29 @@ insert into sessions (step, time_label, title, tags) values
 on conflict (step) do nothing;
 
 -- ─────────────────────────────────────────────────────────────
+-- upgrade_deposits — cọc giữ chỗ nâng cấp gói (thanh toán qua QR Sepay,
+-- admin xác nhận thủ công sau khi đối chiếu sao kê ngân hàng)
+-- ─────────────────────────────────────────────────────────────
+create table if not exists upgrade_deposits (
+  id uuid primary key default gen_random_uuid(),
+  member_id uuid not null references members(id) on delete cascade,
+  package_id text not null,
+  deposit_amount integer not null default 100000,
+  remaining_amount integer not null,
+  payment_code text not null unique,
+  status text not null default 'pending' check (status in ('pending', 'reported', 'confirmed')),
+  created_at timestamptz not null default now(),
+  reported_at timestamptz,
+  confirmed_at timestamptz
+);
+
+alter table upgrade_deposits enable row level security;
+-- Không policy cho anon/authenticated: mọi truy cập đi qua API server-side (RULE-03/RULE-10).
+
+create index if not exists upgrade_deposits_member_idx on upgrade_deposits (member_id);
+create index if not exists upgrade_deposits_status_idx on upgrade_deposits (status);
+
+-- ─────────────────────────────────────────────────────────────
 -- Index hỗ trợ tra cứu admin
 -- ─────────────────────────────────────────────────────────────
 create index if not exists registrations_created_at_idx on registrations (created_at desc);
