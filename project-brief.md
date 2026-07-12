@@ -2,6 +2,15 @@
 
 Tổng hợp câu trả lời phỏng vấn theo quy trình trong [CLAUDE.md](CLAUDE.md). Tham chiếu xuyên suốt quá trình code — không hỏi lại các mục đã chốt dưới đây.
 
+## Trạng thái deploy (đã xác minh 2026-07-12)
+
+- ✅ GitHub: đã push tại `https://github.com/linhlem24122024/thanhbui`
+- ✅ Supabase (`phlyxtafoybuujggtdpn`): schema đã chạy, đã test insert/select thật qua toàn bộ luồng register → login → change-password → dashboard → admin → upgrade → export CSV
+- ✅ Upstash Redis: đã nối (lưu ý — DB đầu tiên tạo ở chế độ **Global** không hỗ trợ `EVALSHA`/Lua script nên rate-limit lỗi `NOPERM`; đã đổi sang DB **Regional** thì hoạt động bình thường)
+- ✅ Resend: đã nối, dùng domain test `onboarding@resend.dev` (có thể giới hạn chỉ gửi về email chủ tài khoản Resend cho tới khi verify domain riêng)
+- ⚠️ **Lưu ý kỹ thuật quan trọng**: mọi giá trị `.env.local` có chứa ký tự `$` (ví dụ bcrypt hash dạng `$2b$12$...`) PHẢI escape thành `\$` (backslash trước mỗi dấu `$`) — Next.js tự động coi `$ten_bien` là cú pháp chèn biến (dotenv-expand) và sẽ âm thầm cắt mất phần sau, kể cả khi giá trị được bọc trong dấu nháy đơn/kép. Đây là nguyên nhân khiến `ADMIN_PASSWORD_HASH` lúc đầu không khớp mật khẩu dù sinh đúng — đã sửa và xác minh lại bằng `bcrypt.compareSync` sau khi Next.js load xong.
+- ⏳ Vercel: chưa deploy — bước tiếp theo
+
 ## Phần A — Frontend (đã xác nhận)
 
 | # | Mục | Nội dung |
