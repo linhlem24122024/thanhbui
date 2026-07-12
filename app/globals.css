@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #222222;
+
+  /* Bảng màu lấy từ khoahocsolo.com — xem project-brief.md mục A.3.3 */
+  --navy-dark: #001d4a;
+  --navy-mid: #003580;
+  --navy-light: #004aad;
+  --navy-footer: #001230;
+  --accent-red: #e63946;
+  --accent-gold: #ffd700;
+  --bg-light: #f7f9fc;
+  /* Đậm hơn #888888 gốc để đạt tỉ lệ tương phản ~4.8:1 trên nền trắng (đạt WCAG AA cho chữ thường) */
+  --text-muted: #6b7280;
+
+  --hero-gradient: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 40%, var(--navy-light) 100%);
+  --dark-gradient: linear-gradient(135deg, var(--navy-dark), var(--navy-mid));
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy-dark: var(--navy-dark);
+  --color-navy-mid: var(--navy-mid);
+  --color-navy-light: var(--navy-light);
+  --color-navy-footer: var(--navy-footer);
+  --color-accent-red: var(--accent-red);
+  --color-accent-gold: var(--accent-gold);
+  --color-bg-light: var(--bg-light);
+  --color-text-muted: var(--text-muted);
+  --font-sans: var(--font-be-vietnam-pro);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-be-vietnam-pro), system-ui, sans-serif;
+}
+
+.bg-hero-gradient {
+  background: var(--hero-gradient);
+}
+
+.bg-dark-gradient {
+  background: var(--dark-gradient);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+ * Trạng thái focus-visible dùng chung cho toàn bộ phần tử tương tác.
+ * Áp dụng tự động (không cần thêm class) cho link/button/input/select/textarea/summary
+ * để đảm bảo điều hướng bằng bàn phím (Tab) luôn nhìn thấy rõ phần tử đang được chọn.
+ *
+ * Dùng "double ring" (viền trắng mỏng + viền navy đậm) thay vì outline 1 màu duy nhất:
+ * outline màu vàng/đỏ đơn sắc gần như vô hình trên nền trắng (tỉ lệ tương phản < 2:1),
+ * trong khi kết hợp trắng + navy luôn đảm bảo tối thiểu 1 lớp viền nổi rõ dù nền sáng hay tối.
+ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--navy-mid);
+}
+
+/* Utility dùng cho trường hợp cần khai báo tường minh trong component */
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--navy-mid);
+}
