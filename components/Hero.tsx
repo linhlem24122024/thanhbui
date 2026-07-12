@@ -8,8 +8,21 @@ export default function Hero() {
   const mainPackage = packages[0];
 
   return (
-    <section id="top" className="bg-hero-gradient px-4 py-16 text-white sm:px-6 sm:py-24">
-      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+    <section id="top" className="relative overflow-hidden bg-hero-gradient px-4 py-16 text-white sm:px-6 sm:py-24">
+      {/* Trang trí nền: khối glow mờ + lưới chấm nhẹ, thuần CSS/SVG — không cần ảnh ngoài */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-accent-gold/20 blur-[100px]" />
+        <div className="absolute top-1/3 -left-32 h-80 w-80 rounded-full bg-navy-light/40 blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-accent-gold/10 blur-[100px]" />
+        <svg className="absolute inset-0 h-full w-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
+          <pattern id="hero-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.4" fill="white" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#hero-dots)" />
+        </svg>
+      </div>
+
+      <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div>
           <span className="mb-5 inline-block rounded-full bg-accent-gold/15 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-accent-gold sm:text-sm">
             {hero.badge}
