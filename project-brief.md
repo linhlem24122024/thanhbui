@@ -12,8 +12,19 @@ Tổng hợp câu trả lời phỏng vấn theo quy trình trong [CLAUDE.md](CL
 - ⚠️ **Lưu ý kỹ thuật — thêm biến qua Vercel CLI trên Windows PowerShell**: lệnh `"value" | vercel env add NAME production` bị PowerShell chèn BOM (ký tự ẩn U+FEFF) vào đầu chuỗi, làm hỏng giá trị dù nhìn bằng mắt vẫn đúng (ví dụ URL Upstash bị lỗi "invalid URL" dù copy đúng). Cách né: dùng Bash + `printf '%s' "value" | vercel env add NAME production` (không dùng PowerShell pipe cho bước này).
 - ✅ Vercel: đã deploy production tại **https://thanh-woad.vercel.app** (project `buivanthanh/thanh`), đã test thật toàn bộ luồng register → login → change-password → admin → upgrade → export CSV trên domain live, dữ liệu test đã dọn sạch khỏi Supabase.
 - ✅ GitHub ↔ Vercel: đã kết nối (`vercel git connect`) sau khi anh cài Vercel GitHub App và cấp quyền cho repo `thanhbui` — từ giờ mỗi lần push code lên `main` sẽ tự động build & deploy, không cần chạy `vercel --prod` thủ công nữa.
-- ✅ **Domain riêng: `thanhbui.shop`** — anh đã tự mua và kết nối trực tiếp trên Vercel Dashboard (không qua Claude Code). Đã xác minh chạy tốt, có SSL. **Dùng domain này làm chính**, không dùng link `*.vercel.app` — ghi nhận trường hợp domain `thanh-woad.vercel.app` bị treo ở màn hình loading khi truy cập từ một số mạng ở Việt Nam (nghi ISP chặn/nghẽn riêng domain phụ `*.vercel.app`), trong khi `thanhbui.shop` không gặp vấn đề này.
+- ✅ **Domain riêng: `thanhbui.shop`** — anh đã tự mua và kết nối trực tiếp trên Vercel Dashboard (không qua Claude Code). Đã xác minh chạy tốt, có SSL.
+- ⚠️ **Cập nhật quan trọng — lỗi "treo ở Đang tải..." đã sửa xong (2026-07-12), KHÔNG phải do ISP như nghi ngờ ban đầu.** Nguyên nhân thật: (1) CSP quá chặt chặn script nội bộ Next.js (đã nới `script-src` thêm `'unsafe-inline'`), và (2) file `app/loading.tsx` (do agent SEO tạo, không cần thiết vì trang không có phần async nào) làm hỏng cơ chế streaming/hydrate của Next.js — đã xoá file này. Cả 2 lỗi cộng lại khiến trang mãi không hydrate dù nội dung đã render xong. Bài học: PHẢI test bằng `next build && next start` (production thật) trước khi tin tưởng bất kỳ thay đổi CSP/cấu trúc route nào, `next dev` không tái hiện được lỗi này.
 - 📝 Việc nên làm tiếp: verify domain `thanhbui.shop` trên Resend (Resend Dashboard → Domains → Add Domain → thêm DNS record theo hướng dẫn) rồi đổi `RESEND_FROM_EMAIL` từ `onboarding@resend.dev` sang dạng `no-reply@thanhbui.shop` để email thông báo đăng ký mới không bị đánh dấu spam.
+
+## Tính năng cọc nâng cấp qua Sepay (thêm 2026-07-12)
+
+- Khách bấm "Cọc giữ chỗ" ở `/upgrade` → redirect sang trang thanh toán SePay (QR VietQR, cọc cố định 100.000đ) → quay lại site sau khi thanh toán/huỷ.
+- SePay Merchant: `SP-LIVE-BV766255` (tài khoản MB Bank thật của anh, số `0964938167`) — đã cấu hình `SEPAY_MERCHANT_ID` + `SEPAY_SECRET_KEY` trên cả `.env.local` và Vercel.
+- **IPN webhook đã cấu hình xong** trên dashboard Sepay: `https://thanhbui.shop/api/webhooks/sepay-ipn` — tự động chuyển trạng thái cọc `pending → reported` + email báo anh ngay khi khách thanh toán xong.
+- Xác nhận cuối cùng ("Đã cọc") vẫn cần **anh tự tick thủ công** trong `/admin` sau khi đối chiếu sao kê ngân hàng — vì tài liệu Sepay không có cơ chế ký (signature) xác thực IPN, nên không tự động tin 100% webhook để tránh rủi ro giả mạo.
+- Bảng `upgrade_deposits` lưu: gói nâng cấp, số tiền đã cọc, số tiền còn phải trả, mã tham chiếu, trạng thái.
+- Đã test thật với merchant live của anh (tạo + huỷ đơn test, không mất tiền): xác nhận chữ ký đúng, QR hiển thị đúng số tiền/tài khoản, redirect cancel/success đều hoạt động.
+- Phạm vi hiện tại: chỉ áp dụng cho học viên đã có tài khoản (trang `/upgrade`). Luồng "mua thẳng" cho khách chưa đăng ký (từ nút giá ở trang chủ) — CHƯA làm, cần làm riêng nếu anh muốn.
 
 ## Phần A — Frontend (đã xác nhận)
 
