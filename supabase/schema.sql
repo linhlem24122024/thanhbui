@@ -63,6 +63,7 @@ create table if not exists membership_tiers (
 );
 
 alter table membership_tiers enable row level security;
+drop policy if exists "membership_tiers public read" on membership_tiers;
 create policy "membership_tiers public read" on membership_tiers for select using (true);
 
 insert into membership_tiers (tier_key, display_name, price, benefits) values
@@ -84,6 +85,7 @@ create table if not exists packages (
 );
 
 alter table packages enable row level security;
+drop policy if exists "packages public read" on packages;
 create policy "packages public read" on packages for select using (true);
 
 insert into packages (id, name, price, seats, benefits) values
@@ -106,6 +108,7 @@ create table if not exists sessions (
 );
 
 alter table sessions enable row level security;
+drop policy if exists "sessions public read" on sessions;
 create policy "sessions public read" on sessions for select using (true);
 
 insert into sessions (step, time_label, title, tags) values
